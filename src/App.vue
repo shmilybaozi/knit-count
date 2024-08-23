@@ -1,30 +1,158 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { onMounted, reactive, ref, watch } from 'vue'
+import KnitCount from './components/KnitCount.vue'
+
+let tabIndex = 0
+const editableTabsValue = ref('1')
+const editableTabs = ref([])
+
+const addTab = ({ name, row }) => {
+  const newTabName = `${++tabIndex}`
+  editableTabs.value.push({
+    title: name,
+    name: newTabName,
+    row: row
+  })
+  editableTabsValue.value = newTabName
+}
+
+const removeTab = (targetName) => {
+  const tabs = editableTabs.value
+  let activeName = editableTabsValue.value
+  if (activeName === targetName) {
+    tabs.forEach((tab, index) => {
+      if (tab.name === targetName) {
+        const nextTab = tabs[index + 1] || tabs[index - 1]
+        if (nextTab) {
+          activeName = nextTab.name
+        }
+      }
+    })
+  }
+
+  editableTabsValue.value = activeName
+  editableTabs.value = tabs.filter((tab) => tab.name !== targetName)
+
+}
+const dialogVisible = ref(false)
+const dialogTitle = ref('新增')
+
+const form = reactive({
+  name: '',
+  row: 0
+})
+const ruleFormRef = ref(null)
+const rules = reactive({
+  name: [
+    { required: true, message: '请填写部位名称', trigger: 'blur' }
+  ]
+})
+
+const submitForm = async (formEl) => {
+  if (!formEl) return
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      addTab(form)
+      dialogVisible.value = false
+      formEl.clearValidate()
+      formEl.resetFields()
+    } else {
+      console.log('error submit!', fields)
+    }
+  })
+}
+
+function saveTabsToLocalStorage() {
+  // 将 tabs 转换为 JSON 字符串
+  const tabsJson = JSON.stringify(editableTabs.value)
+
+  // 保存到 localStorage
+  localStorage.setItem('knit', tabsJson)
+}
+
+function loadTabsFromLocalStorage() {
+  const tabsJson = localStorage.getItem('knit')
+  if (tabsJson) {
+    editableTabs.value = JSON.parse(tabsJson)
+    tabIndex = editableTabs.value.length
+  }
+}
+
+onMounted(() => {
+  loadTabsFromLocalStorage()
+})
+
+watch(() => editableTabs.value,
+  () => {
+      saveTabsToLocalStorage()
+  },
+  { deep: true}
+)
+
+const resetForm = (formEl) => {
+  if (!formEl) return
+  formEl.clearValidate()
+  formEl.resetFields()
+  dialogVisible.value = false
+}
+
+function handleChange(knit) {
+  const tabs = editableTabs.value.filter((item) => item.name !== knit.name)
+  editableTabs.value = [...tabs, knit]
+}
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="knit-container">
+    <div style="margin-bottom: 10px">
+      <el-button size="small" @click="dialogVisible = true">
+        新增计算页
+      </el-button>
+    </div>
+    <el-tabs
+      v-if="editableTabs.length > 0"
+      v-model="editableTabsValue"
+      type="card"
+      closable
+      @tab-remove="removeTab"
+    >
+      <el-tab-pane
+        v-for="item in editableTabs"
+        :key="item.name"
+        :label="item.title"
+        :name="item.name"
+      >
+        <knit-count :knit="item" @update:knit="handleChange" />
+      </el-tab-pane>
+    </el-tabs>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  <el-dialog
+    v-model="dialogVisible"
+    :title="dialogTitle"
+    width="500"
+  >
+    <el-form ref="ruleFormRef" :model="form" label-width="auto" :rules="rules">
+      <el-form-item label="部位名称" prop="name">
+        <el-input v-model="form.name" />
+      </el-form-item>
+      <el-form-item label="行数" prop="row">
+        <el-input-number v-model="form.row" :min="0" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="resetForm(ruleFormRef)">取消</el-button>
+        <el-button type="primary" @click="submitForm(ruleFormRef)">
+          确定
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.knit-container {
+  width: 100%;
+  height: 100%;
 }
 </style>
