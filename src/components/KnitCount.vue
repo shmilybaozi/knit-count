@@ -1,5 +1,6 @@
 <script setup>
 import { Minus, Plus } from '@element-plus/icons-vue'
+import dayjs from 'dayjs'
 import { computed, onMounted, ref, toRefs } from 'vue'
 import { getFormattedDate } from '../util/index.js'
 
@@ -12,7 +13,6 @@ const emit = defineEmits(['update:knit'])
 let { knit } = toRefs(props)
 
 onMounted(() => {
-  console.log(`💙💙💙💙  -> knit.value ==>`, knit.value)
   count.value = knit.value.count || 0
   contentArray.value = knit.value.contentArray || []
 })
@@ -29,9 +29,11 @@ const contentArray = ref([])
 function handleMinus() {
   if (count.value > 0) {
     count.value--
+    const diffTime = getDiffTime()
     contentArray.value.unshift({
-      content: `-1行 ${count.value} 行`,
-      time: getFormattedDate()
+      content: `1行 ${count.value} 行`,
+      time: getFormattedDate(),
+      diffTime
     })
     emit('update:knit', {
       ...knit.value,
@@ -41,12 +43,23 @@ function handleMinus() {
   }
 }
 
+function getDiffTime() {
+  if (contentArray.value && contentArray.value[0]) {
+    const time1 = dayjs(contentArray.value[0].time)
+    return dayjs(getFormattedDate()).diff(time1, 'minute')
+  }
+  return ''
+}
+
 function handlePlus() {
   if (count.value < knit.value.row) {
     count.value++
+    const diffTime = getDiffTime()
     contentArray.value.unshift({
-      content: `+1行 ${count.value} 行`,
-      time: getFormattedDate()
+      type: 'plus',
+      content: `1行 ${count.value} 行`,
+      time: getFormattedDate(),
+      diffTime
     })
     emit('update:knit', {
       ...knit.value,
@@ -82,7 +95,15 @@ function handlePlus() {
   <div class="knit-content">
     <div class="content">
       <div v-for="(item, index) in contentArray" :key="index">
-        <span>{{ item.content }}</span> <span class="time">{{ item.time }}</span>
+        <span v-if="item.diffTime" class="diff-time">用时：{{ item.diffTime }}分钟</span>
+        <span>
+          <el-icon size="middle" style="vertical-align: initial">
+            <Plus v-if="item.type==='plus'" color="#67C23A" />
+            <Minus v-else color="#E6A23C" />
+          </el-icon>
+          {{ item.content }}
+        </span>
+        <span class="time">{{ item.time }}</span>
       </div>
     </div>
   </div>
@@ -157,5 +178,11 @@ function handlePlus() {
     font-weight: 700;
     margin: 6px;
   }
+}
+
+.diff-time {
+  margin-right: 10px;
+  font-size: 12px;
+  color: #999999;
 }
 </style>
