@@ -100,12 +100,11 @@ function handlePlus() {
       :disabled="count === knit.row && count !== 0"
       @click="handlePlus"
     />
-    <el-popconfirm title="清空记录过程?" @confirm="handleRemove">
+    <el-popconfirm title="清空记录过程?" v-if="contentArray.length > 0" @confirm="handleRemove">
       <template #reference>
         <el-button
           style="max-width: 20px"
           type="primary"
-          v-if="contentArray.length > 0"
           plain
           :icon="DeleteFilled"
         />
