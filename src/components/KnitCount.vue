@@ -12,6 +12,7 @@ const emit = defineEmits(['update:knit'])
 let { knit } = toRefs(props)
 
 onMounted(() => {
+  console.log(`💙💙💙💙  -> knit.value ==>`, knit.value)
   count.value = knit.value.count || 0
   contentArray.value = knit.value.contentArray || []
 })
@@ -44,7 +45,7 @@ function handlePlus() {
   if (count.value < knit.value.row) {
     count.value++
     contentArray.value.unshift({
-      content: `-1行 ${count.value} 行`,
+      content: `+1行 ${count.value} 行`,
       time: getFormattedDate()
     })
     emit('update:knit', {
@@ -114,7 +115,8 @@ function handlePlus() {
 }
 
 .knit-content {
-  display: flex;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .knit-btn {
@@ -125,8 +127,9 @@ function handlePlus() {
 }
 
 .content {
-  flex: 1;
   color: #010101;
+  width: 100%;
+  overflow-y: auto;
   > div {
     margin-top: 10px;
     display: flex;

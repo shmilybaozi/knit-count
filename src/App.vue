@@ -6,12 +6,13 @@ let tabIndex = 0
 const editableTabsValue = ref('1')
 const editableTabs = ref([])
 
-const addTab = ({ name, row }) => {
+const addTab = ({ name, row, readyRow }) => {
   const newTabName = `${++tabIndex}`
   editableTabs.value.push({
     title: name,
     name: newTabName,
-    row: row
+    row: row,
+    count: readyRow
   })
   editableTabsValue.value = newTabName
 }
@@ -39,7 +40,8 @@ const dialogTitle = ref('新增')
 
 const form = reactive({
   name: '',
-  row: 0
+  row: 0,
+  readyRow: 0
 })
 const ruleFormRef = ref(null)
 const rules = reactive({
@@ -84,9 +86,9 @@ onMounted(() => {
 
 watch(() => editableTabs.value,
   () => {
-      saveTabsToLocalStorage()
+    saveTabsToLocalStorage()
   },
-  { deep: true}
+  { deep: true }
 )
 
 const resetForm = (formEl) => {
@@ -135,8 +137,11 @@ function handleChange(knit) {
       <el-form-item label="部位名称" prop="name">
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="行数" prop="row">
+      <el-form-item label="总行数" prop="row">
         <el-input-number v-model="form.row" :min="0" />
+      </el-form-item>
+      <el-form-item label="已织行数">
+        <el-input-number v-model="form.readyRow" :min="0" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -154,5 +159,14 @@ function handleChange(knit) {
 .knit-container {
   width: 100%;
   height: 100%;
+}
+.el-tabs {
+  height: calc(100% - 34px);
+}
+
+:deep(.el-tab-pane) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 </style>
