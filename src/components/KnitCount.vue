@@ -1,5 +1,5 @@
 <script setup>
-import { Minus, Plus } from '@element-plus/icons-vue'
+import { DeleteFilled, Minus, Plus } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import { computed, onMounted, ref, toRefs } from 'vue'
 import { getFormattedDate } from '../util/index.js'
@@ -11,6 +11,10 @@ const props = defineProps({
 const emit = defineEmits(['update:knit'])
 
 let { knit } = toRefs(props)
+
+function handleRemove() {
+  contentArray.value = []
+}
 
 onMounted(() => {
   count.value = knit.value.count || 0
@@ -52,7 +56,7 @@ function getDiffTime() {
 }
 
 function handlePlus() {
-  if (count.value < knit.value.row) {
+  if (count.value < knit.value.row || knit.value.row === 0) {
     count.value++
     const diffTime = getDiffTime()
     contentArray.value.unshift({
@@ -84,26 +88,41 @@ function handlePlus() {
         striped
       />
     </div>
-    <div class="knit-ing">
-      您正在编织的是第 <span>{{ count }}</span> 行
-    </div>
   </template>
+  <div class="knit-ing">
+    您正在编织的是第 <span>{{ count }}</span> 行
+  </div>
   <div class="knit-btn">
     <el-button type="primary" plain :icon="Minus" :disabled="count === 0" @click="handleMinus" />
-    <el-button type="primary" :icon="Plus" :disabled="count === knit.row" @click="handlePlus" />
+    <el-button
+      type="primary"
+      :icon="Plus"
+      :disabled="count === knit.row && count !== 0"
+      @click="handlePlus"
+    />
+    <el-popconfirm title="清空记录过程?" @confirm="handleRemove">
+      <template #reference>
+        <el-button
+          style="max-width: 20px"
+          type="primary"
+          v-if="contentArray.length > 0"
+          plain
+          :icon="DeleteFilled"
+        />
+      </template>
+    </el-popconfirm>
+
   </div>
   <div class="knit-content">
     <div class="content">
       <div v-for="(item, index) in contentArray" :key="index">
-        <span v-if="item.diffTime" class="diff-time">用时：{{ item.diffTime }}分钟</span>
-        <span>
+        <span v-if="item.diffTime" class="diff-time">用时：{{ item.diffTime }}分钟</span> <span>
           <el-icon size="middle" style="vertical-align: initial">
             <Plus v-if="item.type==='plus'" color="#67C23A" />
             <Minus v-else color="#E6A23C" />
           </el-icon>
           {{ item.content }}
-        </span>
-        <span class="time">{{ item.time }}</span>
+        </span> <span class="time">{{ item.time }}</span>
       </div>
     </div>
   </div>
@@ -152,6 +171,7 @@ function handlePlus() {
   width: 100%;
   overflow-y: auto;
   > div {
+    padding-right: 10px;
     margin-top: 10px;
     display: flex;
     align-items: center;
