@@ -7,12 +7,12 @@
       </div>
       <el-button
         type="primary"
-        :disabled="!store.timeRunning"
+        :disabled="!store.timeRunning[knit.name]"
         :icon="VideoPause"
         @click="pauseTimer"
       ></el-button>
       <el-button
-        v-show="!store.timeRunning && store.milliseconds"
+        v-show="!store.timeRunning[knit.name] && store.milliseconds[knit.name]"
         type="primary"
         :icon="VideoPlay"
         @click="startTimer"
@@ -30,40 +30,46 @@
 <script setup>
 import { VideoPause, VideoPlay } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, toRefs, watch } from 'vue'
 import { useStore } from '../store/time.js'
 import { formatTime } from '../util/index.js'
 import emitter from '../util/mitt.js'
 
 let store = useStore()
 
-const displayTime = ref(formatTime(store.milliseconds))
 let timerInterval = null
 
 const totalTime = ref(0)
 
+const props = defineProps({
+  knit: Object
+})
+
+let { knit } = toRefs(props)
+const displayTime = ref(formatTime(store.milliseconds[knit.value.name]))
+
 const startTimer = () => {
-  if (!store.timeRunning) {
-    store.timeRunning = true
+  if (!store.timeRunning[knit.value.name]) {
+    store.timeRunning[knit.value.name] = true
     timerInterval = setInterval(() => {
-      store.milliseconds += 10 // 更新10毫秒，以提高精度
-      displayTime.value = formatTime(store.milliseconds)
+      store.milliseconds[knit.value.name] += 10 // 更新10毫秒，以提高精度
+      displayTime.value = formatTime(store.milliseconds[knit.value.name])
     }, 10)
   }
 }
 
 const pauseTimer = () => {
-  if (store.timeRunning) {
-    store.timeRunning = false
+  if (store.timeRunning[knit.value.name]) {
+    store.timeRunning[knit.value.name] = false
     clearInterval(timerInterval)
   }
 }
 
 const resetTimer = () => {
-  store.timeRunning = false
+  store.timeRunning[knit.value.name] = false
   clearInterval(timerInterval)
-  store.milliseconds = 0
-  displayTime.value = formatTime(store.milliseconds)
+  store.milliseconds[knit.value.name] = 0
+  displayTime.value = formatTime(store.milliseconds[knit.value.name])
 }
 
 const endStatus = ref(false)
@@ -75,15 +81,15 @@ function endShow(status) {
 const endTimer = () => {
   ElMessage({
     message: '🎉棒棒哦，这部分已经完成啦！',
-    type: 'success',
+    type: 'success'
   })
-  totalTime.value += store.milliseconds
+  totalTime.value += store.milliseconds[knit.value.name]
   resetTimer()
 }
 
-watch(() => store.contentArray, () => {
+watch(() => store.contentArray[knit.value.name], () => {
   let time = 0
-  store.contentArray.forEach(item => {
+  store.contentArray && store.contentArray[knit.value.name] && store.contentArray[knit.value.name].forEach(item => {
     if (item.time && item.isCount) {
       time += item.time
     }
@@ -99,20 +105,19 @@ onMounted(() => {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       console.log('标签页失去焦点')
-      if (store.timeRunning) {
+      if (store.timeRunning[knit.value.name]) {
         const startTime = Date.now()
         localStorage.setItem('timerStartTime', startTime.toString())
 
       }
     } else if (document.visibilityState === 'visible') {
       console.log('标签页重新获得焦点')
-      if (store.timeRunning) {
+      if (store.timeRunning[knit.value.name]) {
         const savedStartTime = localStorage.getItem('timerStartTime')
         if (savedStartTime) {
           const nowTime = Date.now()
           const diff = nowTime - Number(savedStartTime)
-          store.milliseconds += diff
-          console.log(`💙💙💙💙  -> diff ==>`, diff)
+          store.milliseconds[knit.value.name] += diff
         }
 
       }

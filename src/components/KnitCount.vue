@@ -11,26 +11,26 @@ const props = defineProps({
   knit: Object
 })
 
-const emit = defineEmits(['update:knit'])
-
 let { knit } = toRefs(props)
+
+const emit = defineEmits(['update:knit'])
 
 function handleUpdate() {
   emit('update:knit', {
     ...knit.value,
     count: count.value,
-    contentArray: store.contentArray
+    contentArray: store.contentArray[knit.value.name]
   })
 }
 
+
 function handleRemove() {
-  store.contentArray = []
+  store.contentArray[knit.value.name] = []
   handleUpdate()
 }
 
 onMounted(() => {
   count.value = knit.value.count || 0
-  store.contentArray = knit.value.contentArray || []
 })
 
 const count = ref(10)
@@ -40,15 +40,14 @@ const percentage = computed(() => {
   return Math.floor(ratio * 100)
 })
 
-
 function handleMinus() {
   if (count.value > 0) {
     count.value--
-    if (store.contentArray[0] && store.contentArray[0].isCount) {
-      store.contentArray[0].isCount = false
+    if (store.contentArray[knit.value.name][0] && store.contentArray[knit.value.name][0].isCount) {
+      store.contentArray[knit.value.name][0].isCount = false
 
     }
-    store.contentArray.unshift({
+    store.contentArray[knit.value.name].unshift({
       content: `1 >>> ${count.value.toString().padStart(2, '0')} 行`,
       now: getFormattedDate(),
       isCount: false
@@ -62,10 +61,10 @@ function handlePlus() {
   if (count.value < knit.value.row || knit.value.row === 0) {
     count.value++
     emitter.emit('endShow', count.value === knit.value.row)
-    store.contentArray.unshift({
+    store.contentArray[knit.value.name].unshift({
       type: 'plus',
       content: `1 >>> ${count.value.toString().padStart(2, '0')} 行`,
-      time: store.milliseconds,
+      time: store.milliseconds[knit.value.name],
       now: getFormattedDate(),
       isCount: true
     })
@@ -109,7 +108,7 @@ function handlePlus() {
     />
     <el-popconfirm
       title="清空记录过程?"
-      v-if="store.contentArray.length > 0"
+      v-if="store.contentArray[knit.name].length > 0"
       @confirm="handleRemove"
     >
       <template #reference>
@@ -125,7 +124,7 @@ function handlePlus() {
   </div>
   <div class="knit-content">
     <div class="content">
-      <div v-for="(item, index) in store.contentArray" :key="index">
+      <div v-for="(item, index) in store.contentArray[knit.name]" :key="index">
         <span
           v-if="item.time"
           class="diff-time"

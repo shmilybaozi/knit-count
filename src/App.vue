@@ -2,10 +2,12 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import KnitCount from './components/KnitCount.vue'
 import KnitTime from './components/KnitTime.vue'
+import { useStore } from './store/time.js'
 
 let tabIndex = 0
 const editableTabsValue = ref('1')
 const editableTabs = ref([])
+let store = useStore()
 
 const addTab = ({ name, row, readyRow }) => {
   const newTabName = `${++tabIndex}`
@@ -15,6 +17,9 @@ const addTab = ({ name, row, readyRow }) => {
     row: row,
     count: readyRow
   })
+  store.milliseconds[newTabName] = 0
+  store.timeRunning[newTabName] = false
+  store.contentArray[newTabName] = []
   editableTabsValue.value = newTabName
 }
 
@@ -77,8 +82,14 @@ function loadTabsFromLocalStorage() {
   const tabsJson = localStorage.getItem('knit')
   if (tabsJson) {
     editableTabs.value = JSON.parse(tabsJson)
+    tabIndex = editableTabs.value.length
     if (editableTabs.value.length > 0) {
       editableTabsValue.value = editableTabs.value[editableTabs.value.length - 1].name
+      editableTabs.value.forEach((item) => {
+        store.milliseconds[item.name] = 0
+        store.timeRunning[item.name] = false
+        store.contentArray[item.name] = item.contentArray || []
+      })
     }
   }
 }
@@ -134,7 +145,7 @@ function handleChange(knit) {
         :label="item.title"
         :name="item.name"
       >
-        <knit-time />
+        <knit-time :knit="item" />
         <knit-count :knit="item" @update:knit="handleChange" />
       </el-tab-pane>
     </el-tabs>
