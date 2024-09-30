@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
 import KnitCount from './components/KnitCount.vue'
+import KnitTime from './components/KnitTime.vue'
 
 let tabIndex = 0
 const editableTabsValue = ref('1')
@@ -105,8 +106,14 @@ function handleChange(knit) {
 </script>
 
 <template>
-  <div class="knit-container">
-    <div style="margin-bottom: 10px">
+  <div class="knit-container" :class="{'init-knit': editableTabs.length === 0}">
+    <el-button
+      v-if="editableTabs.length === 0"
+      @click="dialogVisible = true"
+      type="primary">
+      开启美好编织
+    </el-button>
+    <div v-if="editableTabs.length > 0" style="margin-bottom: 10px">
       <el-button size="small" @click="dialogVisible = true">
         新增计算页
       </el-button>
@@ -124,6 +131,7 @@ function handleChange(knit) {
         :label="item.title"
         :name="item.name"
       >
+        <knit-time />
         <knit-count :knit="item" @update:knit="handleChange" />
       </el-tab-pane>
     </el-tabs>
@@ -160,6 +168,13 @@ function handleChange(knit) {
   width: 100%;
   height: 100%;
 }
+
+.init-knit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .el-tabs {
   height: calc(100% - 34px);
 }

@@ -17,3 +17,15 @@ export function getFormattedDate() {
 
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
+
+
+export function formatTime(milliseconds,isSec) {
+  const seconds = Math.floor((milliseconds / 1000) % 60)
+  const minutes = Math.floor((milliseconds / (1000 * 60)) % 60)
+  const hours = Math.floor(milliseconds / (1000 * 60 * 60))
+
+  if (isSec) {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${(milliseconds % 1000).toString().padStart(3, '0')}`
+}

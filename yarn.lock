@@ -332,6 +332,11 @@
     "@vue/compiler-dom" "3.4.38"
     "@vue/shared" "3.4.38"
 
+"@vue/devtools-api@^6.6.3":
+  version "6.6.4"
+  resolved "https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz#cbe97fe0162b365edc1dba80e173f90492535343"
+  integrity sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==
+
 "@vue/reactivity@3.4.38":
   version "3.4.38"
   resolved "https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.4.38.tgz"
@@ -504,6 +509,11 @@ memoize-one@^6.0.0:
   resolved "https://registry.npmmirror.com/memoize-one/-/memoize-one-6.0.0.tgz"
   integrity sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==
 
+mitt@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmmirror.com/mitt/-/mitt-3.0.1.tgz#ea36cf0cc30403601ae074c8f77b7092cdab36d1"
+  integrity sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==
+
 nanoid@^3.3.7:
   version "3.3.7"
   resolved "https://registry.npmmirror.com/nanoid/-/nanoid-3.3.7.tgz"
@@ -518,6 +528,14 @@ picocolors@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/picocolors/-/picocolors-1.0.1.tgz"
   integrity sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==
+
+pinia@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.npmmirror.com/pinia/-/pinia-2.2.2.tgz#dcf576c9a778187d1542c5e6a9f8b8cd5b6aea14"
+  integrity sha512-ja2XqFWZC36mupU4z1ZzxeTApV7DOw44cV4dhQ9sGwun+N89v/XP7+j7q6TanS1u1tdbK4r+1BUx7heMaIdagA==
+  dependencies:
+    "@vue/devtools-api" "^6.6.3"
+    vue-demi "^0.14.10"
 
 postcss@^8.4.40, postcss@^8.4.41:
   version "8.4.41"
@@ -574,7 +592,7 @@ vite@^5.4.1:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vue-demi@*:
+vue-demi@*, vue-demi@^0.14.10:
   version "0.14.10"
   resolved "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.10.tgz"
   integrity sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==

@@ -2,7 +2,11 @@
 import { DeleteFilled, Minus, Plus } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import { computed, onMounted, ref, toRefs } from 'vue'
-import { getFormattedDate } from '../util/index.js'
+import { useStore } from '../store/time.js'
+import { formatTime, getFormattedDate } from '../util/index.js'
+import emitter from '../util/mitt.js'
+
+let store = useStore()
 
 const props = defineProps({
   knit: Object
@@ -13,12 +17,12 @@ const emit = defineEmits(['update:knit'])
 let { knit } = toRefs(props)
 
 function handleRemove() {
-  contentArray.value = []
+  store.contentArray = []
 }
 
 onMounted(() => {
   count.value = knit.value.count || 0
-  contentArray.value = knit.value.contentArray || []
+  store.contentArray = knit.value.contentArray || []
 })
 
 const count = ref(10)
@@ -33,23 +37,22 @@ const contentArray = ref([])
 function handleMinus() {
   if (count.value > 0) {
     count.value--
-    const diffTime = getDiffTime()
-    contentArray.value.unshift({
-      content: `1行 ${count.value} 行`,
-      time: getFormattedDate(),
-      diffTime
+    store.contentArray.unshift({
+      content: `1行 ${count.value.toString().padStart(2, '0')} 行`,
+      now: getFormattedDate(),
     })
+    emitter.emit('resetTimer')
     emit('update:knit', {
       ...knit.value,
       count: count.value,
-      contentArray: contentArray.value
+      contentArray: store.contentArray
     })
   }
 }
 
 function getDiffTime() {
-  if (contentArray.value && contentArray.value[0]) {
-    const time1 = dayjs(contentArray.value[0].time)
+  if (store.contentArray && store.contentArray[0]) {
+    const time1 = dayjs(store.contentArray[0].time)
     return dayjs(getFormattedDate()).diff(time1, 'minute')
   }
   return ''
@@ -58,20 +61,36 @@ function getDiffTime() {
 function handlePlus() {
   if (count.value < knit.value.row || knit.value.row === 0) {
     count.value++
-    const diffTime = getDiffTime()
-    contentArray.value.unshift({
-      type: 'plus',
-      content: `1行 ${count.value} 行`,
-      time: getFormattedDate(),
-      diffTime
-    })
+    emitter.emit('endShow', count.value === knit.value.row)
+    if (store.timeRunning) {
+      store.contentArray.unshift({
+        type: 'plus',
+        content: `1行 ${count.value} 行`,
+        time: store.milliseconds,
+        now: getFormattedDate()
+      })
+      if (count.value) {
+        
+      }
+      emitter.emit('resetTimer')
+      emitter.emit('startTimer')
+    } else {
+      emitter.emit('startTimer')
+      store.contentArray.unshift({
+        type: 'plus',
+        content: `1行 ${count.value.toString().padStart(2, '0')} 行`,
+        time: store.milliseconds,
+        now: getFormattedDate()
+      })
+    }
     emit('update:knit', {
       ...knit.value,
       count: count.value,
-      contentArray: contentArray.value
+      contentArray: store.contentArray
     })
   }
 }
+
 </script>
 
 <template>
@@ -100,7 +119,7 @@ function handlePlus() {
       :disabled="count === knit.row && count !== 0"
       @click="handlePlus"
     />
-    <el-popconfirm title="清空记录过程?" v-if="contentArray.length > 0" @confirm="handleRemove">
+    <el-popconfirm title="清空记录过程?" v-if="store.contentArray.length > 0" @confirm="handleRemove">
       <template #reference>
         <el-button
           style="max-width: 20px"
@@ -114,14 +133,15 @@ function handlePlus() {
   </div>
   <div class="knit-content">
     <div class="content">
-      <div v-for="(item, index) in contentArray" :key="index">
-        <span v-if="item.diffTime" class="diff-time">用时：{{ item.diffTime }}分钟</span> <span>
+      <div v-for="(item, index) in store.contentArray" :key="index">
+        <span v-if="item.time" class="diff-time">用时：{{ formatTime(item.time, true) }}</span>
+        <span>
           <el-icon size="middle" style="vertical-align: initial">
             <Plus v-if="item.type==='plus'" color="#67C23A" />
             <Minus v-else color="#E6A23C" />
           </el-icon>
           {{ item.content }}
-        </span> <span class="time">{{ item.time }}</span>
+        </span> <span class="time">{{ item.now }}</span>
       </div>
     </div>
   </div>
