@@ -1,6 +1,5 @@
 <script setup>
 import { DeleteFilled, Minus, Plus } from '@element-plus/icons-vue'
-import dayjs from 'dayjs'
 import { computed, onMounted, ref, toRefs } from 'vue'
 import { useStore } from '../store/time.js'
 import { formatTime, getFormattedDate } from '../util/index.js'
@@ -37,9 +36,15 @@ const contentArray = ref([])
 function handleMinus() {
   if (count.value > 0) {
     count.value--
+    console.log(`💙💙💙💙 handleMinus -> store.contentArray ==>`, store.contentArray)
+    if (store.contentArray[0] && store.contentArray[0].isCount) {
+      store.contentArray[0].isCount = false
+
+    }
     store.contentArray.unshift({
-      content: `1行 ${count.value.toString().padStart(2, '0')} 行`,
+      content: `1 >>> ${count.value.toString().padStart(2, '0')} 行`,
       now: getFormattedDate(),
+      isCount: false
     })
     emitter.emit('resetTimer')
     emit('update:knit', {
@@ -50,45 +55,29 @@ function handleMinus() {
   }
 }
 
-function getDiffTime() {
-  if (store.contentArray && store.contentArray[0]) {
-    const time1 = dayjs(store.contentArray[0].time)
-    return dayjs(getFormattedDate()).diff(time1, 'minute')
-  }
-  return ''
-}
-
 function handlePlus() {
   if (count.value < knit.value.row || knit.value.row === 0) {
     count.value++
     emitter.emit('endShow', count.value === knit.value.row)
-    if (store.timeRunning) {
-      store.contentArray.unshift({
-        type: 'plus',
-        content: `1行 ${count.value} 行`,
-        time: store.milliseconds,
-        now: getFormattedDate()
-      })
-      if (count.value) {
-        
-      }
-      emitter.emit('resetTimer')
-      emitter.emit('startTimer')
-    } else {
-      emitter.emit('startTimer')
-      store.contentArray.unshift({
-        type: 'plus',
-        content: `1行 ${count.value.toString().padStart(2, '0')} 行`,
-        time: store.milliseconds,
-        now: getFormattedDate()
-      })
-    }
-    emit('update:knit', {
-      ...knit.value,
-      count: count.value,
-      contentArray: store.contentArray
+    store.contentArray.unshift({
+      type: 'plus',
+      content: `1 >>> ${count.value.toString().padStart(2, '0')} 行`,
+      time: store.milliseconds,
+      now: getFormattedDate(),
+      isCount: true
     })
+    if (count.value) {
+
+    }
+    emitter.emit('resetTimer')
+    emitter.emit('startTimer')
   }
+  emit('update:knit', {
+    ...knit.value,
+    count: count.value,
+    contentArray: store.contentArray
+  })
+
 }
 
 </script>
@@ -119,7 +108,11 @@ function handlePlus() {
       :disabled="count === knit.row && count !== 0"
       @click="handlePlus"
     />
-    <el-popconfirm title="清空记录过程?" v-if="store.contentArray.length > 0" @confirm="handleRemove">
+    <el-popconfirm
+      title="清空记录过程?"
+      v-if="store.contentArray.length > 0"
+      @confirm="handleRemove"
+    >
       <template #reference>
         <el-button
           style="max-width: 20px"
@@ -134,8 +127,11 @@ function handlePlus() {
   <div class="knit-content">
     <div class="content">
       <div v-for="(item, index) in store.contentArray" :key="index">
-        <span v-if="item.time" class="diff-time">用时：{{ formatTime(item.time, true) }}</span>
-        <span>
+        <span
+          v-if="item.time"
+          class="diff-time"
+          :class="{ 'deleted': !item.isCount }"
+        >用时：{{ formatTime(item.time, true) }}</span> <span>
           <el-icon size="middle" style="vertical-align: initial">
             <Plus v-if="item.type==='plus'" color="#67C23A" />
             <Minus v-else color="#E6A23C" />
@@ -223,5 +219,9 @@ function handlePlus() {
   margin-right: 10px;
   font-size: 12px;
   color: #999999;
+}
+
+.deleted {
+  text-decoration: line-through;
 }
 </style>
