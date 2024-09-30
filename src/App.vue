@@ -77,7 +77,9 @@ function loadTabsFromLocalStorage() {
   const tabsJson = localStorage.getItem('knit')
   if (tabsJson) {
     editableTabs.value = JSON.parse(tabsJson)
-    tabIndex = editableTabs.value.length
+    if (editableTabs.value.length > 0) {
+      editableTabsValue.value = editableTabs.value[editableTabs.value.length - 1].name
+    }
   }
 }
 
@@ -110,7 +112,8 @@ function handleChange(knit) {
     <el-button
       v-if="editableTabs.length === 0"
       @click="dialogVisible = true"
-      type="primary">
+      type="primary"
+    >
       开启美好编织
     </el-button>
     <div v-if="editableTabs.length > 0" style="margin-bottom: 10px">
