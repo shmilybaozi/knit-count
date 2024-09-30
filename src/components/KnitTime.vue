@@ -29,6 +29,7 @@
 
 <script setup>
 import { VideoPause, VideoPlay } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useStore } from '../store/time.js'
 import { formatTime } from '../util/index.js'
@@ -72,6 +73,10 @@ function endShow(status) {
 }
 
 const endTimer = () => {
+  ElMessage({
+    message: '🎉棒棒哦，这部分已经完成啦！',
+    type: 'success',
+  })
   totalTime.value += store.milliseconds
   resetTimer()
 }

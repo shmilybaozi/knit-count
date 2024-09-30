@@ -15,8 +15,17 @@ const emit = defineEmits(['update:knit'])
 
 let { knit } = toRefs(props)
 
+function handleUpdate() {
+  emit('update:knit', {
+    ...knit.value,
+    count: count.value,
+    contentArray: store.contentArray
+  })
+}
+
 function handleRemove() {
   store.contentArray = []
+  handleUpdate()
 }
 
 onMounted(() => {
@@ -31,12 +40,10 @@ const percentage = computed(() => {
   return Math.floor(ratio * 100)
 })
 
-const contentArray = ref([])
 
 function handleMinus() {
   if (count.value > 0) {
     count.value--
-    console.log(`💙💙💙💙 handleMinus -> store.contentArray ==>`, store.contentArray)
     if (store.contentArray[0] && store.contentArray[0].isCount) {
       store.contentArray[0].isCount = false
 
@@ -47,11 +54,7 @@ function handleMinus() {
       isCount: false
     })
     emitter.emit('resetTimer')
-    emit('update:knit', {
-      ...knit.value,
-      count: count.value,
-      contentArray: store.contentArray
-    })
+    handleUpdate()
   }
 }
 
@@ -72,11 +75,7 @@ function handlePlus() {
     emitter.emit('resetTimer')
     emitter.emit('startTimer')
   }
-  emit('update:knit', {
-    ...knit.value,
-    count: count.value,
-    contentArray: store.contentArray
-  })
+  handleUpdate()
 
 }
 
