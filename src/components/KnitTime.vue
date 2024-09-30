@@ -74,8 +74,10 @@ const resetTimer = () => {
 
 const endStatus = ref(false)
 
-function endShow(status) {
-  endStatus.value = status
+function endShow({ name, status }) {
+  if (name === knit.value.name) {
+    endStatus.value = status
+  }
 }
 
 const endTimer = () => {
@@ -97,9 +99,21 @@ watch(() => store.contentArray[knit.value.name], () => {
   totalTime.value = time
 }, { deep: true, immediate: true })
 
+function handleStartTimer(name) {
+  if (name === knit.value.name) {
+    startTimer()
+  }
+}
+
+function handleResetTimer(name) {
+  if (name === knit.value.name) {
+    resetTimer()
+  }
+}
+
 onMounted(() => {
-  emitter.on('startTimer', startTimer)
-  emitter.on('resetTimer', resetTimer)
+  emitter.on('startTimer', handleStartTimer)
+  emitter.on('resetTimer', handleResetTimer)
   emitter.on('endShow', endShow)
 
   document.addEventListener('visibilitychange', () => {

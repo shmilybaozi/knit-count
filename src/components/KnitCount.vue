@@ -23,7 +23,6 @@ function handleUpdate() {
   })
 }
 
-
 function handleRemove() {
   store.contentArray[knit.value.name] = []
   handleUpdate()
@@ -52,7 +51,7 @@ function handleMinus() {
       now: getFormattedDate(),
       isCount: false
     })
-    emitter.emit('resetTimer')
+    emitter.emit('resetTimer', knit.value.name)
     handleUpdate()
   }
 }
@@ -60,7 +59,7 @@ function handleMinus() {
 function handlePlus() {
   if (count.value < knit.value.row || knit.value.row === 0) {
     count.value++
-    emitter.emit('endShow', count.value === knit.value.row)
+    emitter.emit('endShow', { name: knit.value.name, status: count.value === knit.value.row })
     store.contentArray[knit.value.name].unshift({
       type: 'plus',
       content: `1 >>> ${count.value.toString().padStart(2, '0')} 行`,
@@ -71,8 +70,8 @@ function handlePlus() {
     if (count.value) {
 
     }
-    emitter.emit('resetTimer')
-    emitter.emit('startTimer')
+    emitter.emit('resetTimer', knit.value.name)
+    emitter.emit('startTimer', knit.value.name)
   }
   handleUpdate()
 
